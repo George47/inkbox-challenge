@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Print extends Model
+class Prints extends Model
 {
-    //
+    protected $table = "print_sheet";
 }

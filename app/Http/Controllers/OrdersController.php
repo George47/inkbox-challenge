@@ -21,7 +21,7 @@ class OrdersController extends Controller
 
     public function getOrder($order_id)
     {
-        return view('orders.order')->with('order', $this->getOrders($order_id)[0]);
+        return view('orders.order')->with('orders', $this->getOrders($order_id));
     }
 
     public function getOrders($order_id = false)
@@ -44,6 +44,8 @@ class OrdersController extends Controller
             {
                 $product = Product::where('product_id', $orders_item->product_id)->first();
                 $product->quantity = $orders_item->quantity;
+                $product->order_item_id = $orders_item->order_item_id;
+
                 $order_products[] = $product;
             }
 
