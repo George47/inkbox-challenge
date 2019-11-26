@@ -3,7 +3,7 @@
 @section('content')
     <div class="product-content">
         <h1 class="product-list-header">Products</h1>
-        @if(count($products) > 1)
+        @if(count($products) > 0)
             <ul class="list-group">
             @foreach($products as $product)
                 <li class="list-group-item">

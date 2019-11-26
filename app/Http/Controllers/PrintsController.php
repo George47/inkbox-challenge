@@ -15,9 +15,17 @@ class PrintsController extends Controller
     {
         $this->row_len = 10;
         $this->col_len = 15;
-        $this->matrix = $this->initiateMatrix($this->row_len, $this->col_len, '0');    
-        $this->seen = $this->initiateMatrix($this->row_len, $this->col_len, false);    
+        // should cover size overflow issue
+
+        $this->matrix = $this->initiatePrint($this->row_len, $this->col_len, '0');    
+        $this->seen = $this->initiatePrint($this->row_len, $this->col_len, false);    
     }
+
+    private function initiatePrint($row_len, $col_len, $identifier)
+    {
+        return array_fill(0, $col_len, array_fill(0, $row_len, $identifier));
+    }
+
 
     /**
      * Display a listing of the resource.
@@ -69,8 +77,8 @@ class PrintsController extends Controller
 
         $product = new \stdClass;
         $product->name = '4';
-        $product->width = 4;
-        $product->height = 4;
+        $product->width = $productSize[0];
+        $product->height = $productSize[1];
         $products[] = $product;
 
         $product = new \stdClass;
@@ -97,12 +105,17 @@ class PrintsController extends Controller
         $product->height = 4;
         $products[] = $product;
 
-        // $product = new \stdClass;
-        // $product->name = '3';
-        // $product->width = 3;
-        // $product->height = 3;
-        // $products[] = $product;
+        $product = new \stdClass;
+        $product->name = '3';
+        $product->width = 3;
+        $product->height = 3;
+        $products[] = $product;
 
+        $product = new \stdClass;
+        $product->name = '6';
+        $product->width = 1;
+        $product->height = 6;
+        $products[] = $product;
 
 
         foreach ($products as $product)
@@ -113,26 +126,21 @@ class PrintsController extends Controller
                 {
                     if ($matrix[$row][$col] === '0')
                     {
-                        echo 'for ' . $product->name . ' currently at ' . $row .'-'. $col . "\n";
                         $inserted = false;
 
                         // check if submatrix in in matrix
                         if (($row + $product->height <= count($matrix)) && ($col + $product->width <= count($matrix[0])))
                         {
                             // clone matrix
-                            $matrix_clone = $matrix;
+                            $matrix_clone = new \ArrayObject($matrix);
 
                             // get sub matrix
-                            $sub_matrix = array();
+                            $sub_matrix = new \ArrayObject();
 
-                            for ($height = $row; $height <= $row + $product->height; $height++)
+                            for ($height = $row; $height < $row + $product->height; $height++)
                             {
-                                echo 'col index at '. $col . ', and should go to ' . ($col + $product->width);
-                                $sub_matrix[] = array_splice($matrix_clone[$height], $col, $col + $product->width);
-                                print_r(array_splice($matrix_clone[$height], $col, $col + $product->width));
+                                $sub_matrix[] = array_splice($matrix_clone[$height], $col, $product->width);
                             }
-
-                            print_r($sub_matrix);
 
                             // if rectangle can be injected
                             if ($this->injectable($sub_matrix, '0'))
@@ -162,7 +170,13 @@ class PrintsController extends Controller
         }
 
 
-        return $matrix;
+        $fp = fopen('./archive/'.time().'.csv', 'w');
+
+        foreach ($matrix as $fields) {
+            fputcsv($fp, $fields);
+        }
+        
+        fclose($fp);
     }
 
     /*
@@ -184,32 +198,6 @@ class PrintsController extends Controller
         return true;
     }
 
-    private function dfs($row, $col, &$matrix, &$seen)
-    {
-        // product size, keep row and col sizing, when go right row - 1, go left col - 1
-
-        // if ($this->inMatrix($row, $col, $matrix))
-        if ($row < 0 || $col < 0 || $row >= count($matrix) || $col >= count($matrix[0]) || $matrix[$row][$col] !== '0')
-        {
-            // out of index
-            return;
-        } else {
-            // $temp = [];
-        // if ($this->inMatrix($row, $col, $matrix, $temp)){
-            $matrix[$row][$col] = '1';
-            $this->dfs($row + 1, $col, $matrix, $seen); // row - 1
-            $this->dfs($row - 1, $col, $matrix, $seen); // row - 1
-            $this->dfs($row, $col + 1, $matrix, $seen); // col - 1
-            $this->dfs($row, $col - 1, $matrix, $seen); // col - 1
-
-            // $matrix[$row][$col] = $product1Name;
-            // $this->dfs($row + 1, $col, $matrix, $product1Row, $product1Col, $product1Name);
-            // $this->dfs($row - 1, $col, $matrix, $product1Row, $product1Col, $product1Name);
-            // $this->dfs($row, $col + 1, $matrix, $product1Row, $product1Col, $product1Name);
-            // $this->dfs($row, $col - 1, $matrix, $product1Row, $product1Col, $product1Name);
-        }
-    }
-
     private function getUnusedArea(&$matrix)
     {
         $area = 0;
@@ -229,10 +217,6 @@ class PrintsController extends Controller
         return $area;
     }
 
-    private function initiateMatrix($row_len, $col_len, $identifier)
-    {
-        return array_fill(0, $col_len, array_fill(0, $row_len, $identifier));
-    }
 
     private function inMatrix($row, $col, &$matrix, &$seen)
     {
