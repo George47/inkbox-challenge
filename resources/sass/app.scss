@@ -1,1 +1,111 @@
-//
+// @import "node_modules"
+@import url('https://fonts.googleapis.com/css?family=Montserrat&display=swap');
+
+html, body {
+    background-color: #fff;
+    color: #636b6f;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 200;
+    height: 100vh;
+    margin: 0;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+}
+
+.full-height {
+    height: 100vh;
+}
+
+.flex-center {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+
+.position-ref {
+    position: relative;
+}
+
+.top-right {
+    position: absolute;
+    right: 10px;
+    top: 18px;
+}
+
+.content {
+    text-align: center;
+}
+
+.title {
+    font-size: 84px;
+}
+
+.links > a {
+    color: #636b6f;
+    padding: 0 25px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .1rem;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.m-b-md {
+    margin-bottom: 30px;
+}
+
+.header {
+    height: 150px;
+    background-color: #757575;
+    margin-bottom: 5rem;
+}
+
+.app-header {
+    float: left;
+    margin: 3.5rem;
+    color: white;
+    font-weight: bold;
+    pointer-events: none;
+}
+
+.inkbox-logo {
+    float: right;
+    height: 30px;
+    width: auto;
+    -webkit-filter: invert(100%);
+    margin: 3.5rem;
+}
+
+.back-button {
+    margin-bottom: 3rem;
+}
+
+a {
+    color: inherit;
+}
+
+a:hover {
+    color:#b0b0b0; 
+    text-decoration:none; 
+    cursor:pointer;  
+    transition: 0.5s;
+}
+
+.directory-buttons {
+    margin: 1rem;
+    font-size: 20px;
+}
+
+.product-list-header {
+    margin-bottom: 2rem;
+}
+
+.product-label {
+    padding: 0 8px 0 8px;
+}  
+
+.print-report {
+    font-size: 30px;
+}

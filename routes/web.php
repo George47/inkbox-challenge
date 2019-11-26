@@ -15,4 +15,9 @@ Route::get('/', function () {
     return view('index');
 });
 
+Route::get('prints/generate', 'PrintsController@generatePrint');
+
 Route::resource('products', 'ProductsController');
+Route::resource('orders', 'OrdersController');
+Route::resource('prints', 'PrintsController');
+
