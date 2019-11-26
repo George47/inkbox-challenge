@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Order;
+use App\OrderItem;
+use App\Product;
 
 class OrdersController extends Controller
 {
@@ -14,9 +16,41 @@ class OrdersController extends Controller
      */
     public function index()
     {
-        $orders = Order::all();
+        return view('orders.index')->with('orders', $this->getOrders());
+    }
 
-        return view('orders.index')->with('orders', $orders);
+    public function getOrder($order_id)
+    {
+        return view('orders.order')->with('order', $this->getOrders($order_id)[0]);
+    }
+
+    public function getOrders($order_id = false)
+    {
+        if (!empty($order_id))
+        {
+            $orders = Order::get()->where('order_number', $order_id);
+        } else {
+            $orders = Order::all();
+        }
+        
+        foreach ($orders as $order)
+        {
+            // append products to order
+            $order_products = new \ArrayObject;
+
+            $orders_items = OrderItem::all()->where('order_id', $order->order_id);
+            
+            foreach ($orders_items as $orders_item)
+            {
+                $product = Product::where('product_id', $orders_item->product_id)->first();
+                $product->quantity = $orders_item->quantity;
+                $order_products[] = $product;
+            }
+
+            $order->products = $order_products;
+        }
+
+        return $orders;
     }
 
     /**

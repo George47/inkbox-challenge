@@ -1,7 +1,7 @@
 // require('./bootstrap');
 
 $(document).ready(function(){
-
+    console.log(window.location.href);
     $('#generatePrint').click(() =>{
         console.log('generating ... ');
 

@@ -19,6 +19,8 @@ class PrintsController extends Controller
 
         $this->matrix = $this->initiatePrint($this->row_len, $this->col_len, '0');    
         $this->seen = $this->initiatePrint($this->row_len, $this->col_len, false);    
+
+        $this->orders = app('App\Http\Controllers\OrdersController')->getOrders();
     }
 
     private function initiatePrint($row_len, $col_len, $identifier)
@@ -33,9 +35,9 @@ class PrintsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {
+    {        
         // return $this->getUnusedArea($matrix);
-        return view('prints.index');
+        return view('prints.index')->with('orders', $this->orders);
     }
 
     /**
@@ -57,6 +59,11 @@ class PrintsController extends Controller
         return $matrix;
     }
 
+    private function sortByHeight($a, $b)
+    {
+        return $b->height - $a->height;
+    }
+
     // get list of products, sort by sizing from high to low,
     // then get all possible combinations and 
     // dfs on 0s and get all combination
@@ -66,56 +73,122 @@ class PrintsController extends Controller
     {
         $products = array();
 
-        $productSizeRaw = '4x4';
-        $productSize = explode('x', $productSizeRaw);
+        $orders = $this->orders;
+
+        foreach ($orders as $order)
+        {
+            foreach($order->products as $order_product)
+            {
+                $productSizeRaw = $order_product->size;
+                $productSize = explode('x', $productSizeRaw);
+
+                for ($i = 0; $i < $order_product->quantity; $i++)
+                {
+                    $product = new \stdClass;
+                    $product->name = $order_product->title[0];
+                    $product->width = $productSize[0];
+                    $product->height = $productSize[1];
+                    $products[] = $product;    
+                }
+            }
+        }
+
+        usort($products, array($this, "sortByHeight")); 
+
+        // print_r($products);die;
+        // $productSizeRaw = '4x4';
+        // $productSize = explode('x', $productSizeRaw);
         
-        $product = new \stdClass;
-        $product->name = '4';
-        $product->width = $productSize[0];
-        $product->height = $productSize[1];
-        $products[] = $product;
 
-        $product = new \stdClass;
-        $product->name = '4';
-        $product->width = $productSize[0];
-        $product->height = $productSize[1];
-        $products[] = $product;
+        // $product = new \stdClass;
+        // $product->name = '4';
+        // $product->width = $productSize[0];
+        // $product->height = $productSize[1];
+        // $products[] = $product;
 
-        $product = new \stdClass;
-        $product->name = '3';
-        $product->width = 3;
-        $product->height = 3;
-        $products[] = $product;
+        // $product = new \stdClass;
+        // $product->name = '3';
+        // $product->width = 3;
+        // $product->height = 3;
+        // $products[] = $product;
 
-        $product = new \stdClass;
-        $product->name = '2';
-        $product->width = 2;
-        $product->height = 2;
-        $products[] = $product;
+        // $product = new \stdClass;
+        // $product->name = '2';
+        // $product->width = 2;
+        // $product->height = 2;
+        // $products[] = $product;
 
-        $product = new \stdClass;
-        $product->name = '5';
-        $product->width = 2;
-        $product->height = 5;
-        $products[] = $product;
+        // $product = new \stdClass;
+        // $product->name = '5';
+        // $product->width = 2;
+        // $product->height = 5;
+        // $products[] = $product;
 
-        $product = new \stdClass;
-        $product->name = '4';
-        $product->width = 4;
-        $product->height = 4;
-        $products[] = $product;
+        // $product = new \stdClass;
+        // $product->name = '4';
+        // $product->width = 4;
+        // $product->height = 4;
+        // $products[] = $product;
 
-        $product = new \stdClass;
-        $product->name = '3';
-        $product->width = 3;
-        $product->height = 3;
-        $products[] = $product;
+        // $product = new \stdClass;
+        // $product->name = '3';
+        // $product->width = 3;
+        // $product->height = 3;
+        // $products[] = $product;
 
-        $product = new \stdClass;
-        $product->name = '6';
-        $product->width = 1;
-        $product->height = 6;
-        $products[] = $product;
+        // $product = new \stdClass;
+        // $product->name = '6';
+        // $product->width = 1;
+        // $product->height = 6;
+        // $products[] = $product;
+
+        // $product = new \stdClass;
+        // $product->name = '5';
+        // $product->width = 2;
+        // $product->height = 5;
+        // $products[] = $product;
+
+        // $product = new \stdClass;
+        // $product->name = '4';
+        // $product->width = 4;
+        // $product->height = 4;
+        // $products[] = $product;
+
+        // $product = new \stdClass;
+        // $product->name = '3';
+        // $product->width = 3;
+        // $product->height = 3;
+        // $products[] = $product;
+
+        // $product = new \stdClass;
+        // $product->name = '6';
+        // $product->width = 1;
+        // $product->height = 6;
+        // $products[] = $product;
+
+        // $product = new \stdClass;
+        // $product->name = '5';
+        // $product->width = 2;
+        // $product->height = 5;
+        // $products[] = $product;
+
+        // $product = new \stdClass;
+        // $product->name = '4';
+        // $product->width = 4;
+        // $product->height = 4;
+        // $products[] = $product;
+
+        // $product = new \stdClass;
+        // $product->name = '3';
+        // $product->width = 3;
+        // $product->height = 3;
+        // $products[] = $product;
+
+        // $product = new \stdClass;
+        // $product->name = '6';
+        // $product->width = 1;
+        // $product->height = 6;
+        // $products[] = $product;
 
 
         foreach ($products as $product)
@@ -170,13 +243,14 @@ class PrintsController extends Controller
         }
 
 
-        $fp = fopen('./archive/'.time().'.csv', 'w');
+        // $fp = fopen('./archive/'.time().'.csv', 'w');
 
-        foreach ($matrix as $fields) {
-            fputcsv($fp, $fields);
-        }
+        // foreach ($matrix as $fields) {
+        //     fputcsv($fp, $fields);
+        // }
         
-        fclose($fp);
+        // fclose($fp);
+        return $matrix;
     }
 
     /*
