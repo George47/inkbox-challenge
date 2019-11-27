@@ -4,9 +4,10 @@
     @if(count($orders) > 0)
         <p>Orders to process:</p>
         @foreach($orders as $order)
-            <p><a href="orders/{{$order->order_number}}">{{$order->order_number}}</a></p>
+            <a href="orders/{{$order->order_number}}">{{$order->order_number}}</a>
         @endforeach
     @endif
+    <br>
     <button id="generatePrint" class="btn btn-outline-secondary directory-buttons">Generate Print</button>
     
     <div class="loader" style="display: none;"></div>
