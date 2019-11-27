@@ -12,8 +12,8 @@
     <div class="loader" style="display: none;"></div>
 
     {{-- <div class="print-report"></div> --}}
-    <div class="container">
-        <div class="row print-report">
+    <div class="container print-report">
+        <div class="row print-report-sheets">
         </div>
     </div>
 @endsection

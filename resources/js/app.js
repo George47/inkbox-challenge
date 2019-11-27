@@ -9,19 +9,21 @@ $(document).ready(function(){
 
     console.log(window.location.href);
     $('#generatePrint').click(() =>{
+        $('#generatePrint').attr("disabled", "");
         $('.loader').show();
         
         console.log('generating ... ');
 
         $.get('./prints/generate', function(data) {
-            $('.print-report').empty();        
+            $('.print-report-sheets').empty();        
 
+            $('.print-report').prepend('<p><strong>Unused '+ data.unused +' </strong></p>')
 
-            for (let print = 0; print < data.length; print++)
+            for (let print = 0; print < data.sheet.length; print++)
             {
                 let matrix = '';
                 matrix += '<strong> Sheet ' + (print + 1) + '</strong><br><br>';
-                let print_details = data[print];
+                let print_details = data.sheet[print];
                 for (let i = 0; i < print_details.length; i++)
                 {
                     for (let j = 0; j < print_details[0].length; j++)
@@ -36,7 +38,7 @@ $(document).ready(function(){
                 }
                 matrix += '<br><br>';
 
-                $('.print-report').append(
+                $('.print-report-sheets').append(
                     '   <div class="col-sm">\
                             ' + matrix + '\
                         </div>\

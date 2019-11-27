@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Response;
 use App\Prints;
 use App\PrintItem;
 
@@ -78,6 +79,7 @@ class PrintsController extends Controller
         // @TODO: alternative, find all possible combinations of order placement and products in order
 
         $sheets_full = array();
+
         // create matrix
         foreach ($products_full as $products)
         {
@@ -113,7 +115,10 @@ class PrintsController extends Controller
             fclose($fp);
         }
 
-        return $sheets_full[0]['print'];
+        // return new JsonResponse(array('unused' => $sheets_full[0]['unused'], 'sheet' => $sheets_full[0]['print']));
+        // return Response::json(array('unused' => $sheets_full[0]['unused'], 'sheet' => $sheets_full[0]['print']));
+        return Response::json(['unused' => $sheets_full[0]['unused'], 'sheet' => $sheets_full[0]['print']]);
+
     }
 
     private function sortByUnused($a, $b)
