@@ -42,6 +42,15 @@ class PrintsController extends Controller
         return view('prints.index')->with('orders', $this->orders);
     }
 
+    // approach:
+    //
+    // order level insertion
+    // better solutions
+    //      search for optimized row
+    //      dynamic programming for optimized
+    //
+
+
     /**
      * Showing response of print sheet.
      *
@@ -57,8 +66,14 @@ class PrintsController extends Controller
         // gather products
         $products = $this->gatherProducts($orders);
 
+        // change sorting of products to here,
+        // create two possible algorithms, one sorted and one randomly generates all possible combinations
+
+        
         // create matrix
-        $matrix = $this->insertGrid($products);
+        $matrix = $this->processOrders($products);
+
+        // $matrix = $this->insertGrid($products);
 
         return $matrix;
     }
@@ -121,6 +136,88 @@ class PrintsController extends Controller
     // then get all possible combinations and 
     // dfs on 0s and get all combination
 
+    private function processOrders($orders)
+    {
+        $order_ids = array();
+
+        $print_sheets = array();
+
+        $matrix = $this->initiatePrint($this->row_len, $this->col_len, '0');    
+
+        
+        $index = 0;
+        print_r($orders);die;
+        // while(!empty($orders))
+        // {
+        //     // $orders[$index]
+
+        //     // if inserted, set index to 0 again
+        // }
+        // \unset($orders[0]->products[1]);
+        foreach ($orders as $order_details)
+        {
+
+            $process_order = $order_details->order_id;
+            $process_products = new \ArrayObject($order_details->products);
+
+            $insert_result = $this->insertProducts($matrix, $process_products);
+
+            if ($insert_result['success'])
+            {
+                //record saved matrix
+                $matrix = $insert_result['matrix'];
+
+                // remove order from order list
+                unset($orders[$index]);
+                
+                continue;
+            } else {
+                // print_r($process_order . 'failed');die;
+                //@TODO:
+                //  keep order, next order
+                //      if index at end of order list
+                //          make new matrix 
+                //          reset index
+            }
+        }
+
+        //@TODO: save all matrix
+        $print_sheets[] = $matrix;
+        return $print_sheets;
+    }
+
+    // insert each product to matrix, and unset product
+    // if product list is empty after ending array
+    //      return inserted = true and new matrix
+    // else
+    //      return inserted = false and original matrix
+    private function insertProducts(&$matrix, $products)
+    {
+        //original matrix
+        $matrix_clone = new \ArrayObject($matrix);
+
+        foreach($products as $product)
+        {
+            $result = $this->insertProduct($matrix, $product);
+            // print_r($result);
+            // success insertion, continue to next product
+            if ($result['success'])
+            {
+                $matrix = $result['matrix'];
+            } else {
+                // one of the products failed to insert, report failure
+                return array('success'=>false, 'matrix'=>$matrix_clone);
+            }
+        }
+
+        return array('success'=>true, 'matrix'=>$matrix);
+    }
+
+    // while loop to inject items for order,
+    // clone products and matrix at beginning of function
+    // if all inserted, return new matrix and mark order processed
+    // if cannot all be inserted, return old matrix and leave order to be process for next 
+
     // dynamic programming could be implemented as well as an improvement
     private function insertGrid($products)
     {
@@ -142,70 +239,10 @@ class PrintsController extends Controller
 
             foreach($product_list->products as $product)
             {
-                for ($row = 0; $row < count($matrix); $row++)
-                {
-                    for ($col = 0; $col < count($matrix[0]); $col++)
-                    {
-                        if ($matrix[$row][$col] === '0')
-                        {
-                            $inserted = false;
 
-                            // echo 'doing ' .$product->height . 'x' . $product->width . "\n";
-
-                            // check if submatrix in in matrix
-                            if (($row + $product->height <= count($matrix)) && ($col + $product->width <= count($matrix[0])))
-                            {
-                                // clone matrix
-                                $matrix_clone = new \ArrayObject($matrix);
-
-                                // get sub matrix
-                                $sub_matrix = new \ArrayObject();
-
-                                // echo 'row at ' . $row . ', col at ' . $col . "\n";
-                                for ($height = $row; $height < $row + $product->height; $height++)
-                                {
-                                    $sub_matrix[] = array_splice($matrix_clone[$height], $col, $product->width);
-                                }
-
-                                // print_r($sub_matrix);
-
-                                // if rectangle can be injected
-                                if ($this->injectable($sub_matrix, '0'))
-                                {
-                                    // gather inserted item data at initial
-                                    $inserted_product = new \stdClass;
-                                    $inserted_product->x_pos = $col;
-                                    $inserted_product->y_pos = $row;
-                                    $inserted_product->width = $product->width;
-                                    $inserted_product->height = $product->height;
-                                    $inserted_product->order_item_id = $product->order_item_id;
-
-                                    // insert rectangle
-                                    for ($i = $row; $i < $row + $product->height; $i++)
-                                    {
-                                        for ($j = $col; $j < $col + $product->width; $j++)
-                                        {
-                                            $matrix[$i][$j] = $product->name;
-                                            $inserted = true;
-                                        }
-                                    }
-
-                                    $inserted_products[] = $inserted_product;
-
-                                    $products_clone[] = $inserted_product;
-
-                                    // if inserted, stop the iteration for current product
-                                    if ($inserted)
-                                    {
-                                        break 2;
-                                    }
-
-                                }
-                            }
-                            // $this->dfs($row, $col, $matrix, $seen);
-                        }
-                    }
-                }
+                // START INSERT
+                $matrix = $this->insertProduct($matrix, $product)['matrix'];
+                // END INSERT
             }
             
             // $product_list->products[] = $product_list->products[1];
@@ -215,6 +252,7 @@ class PrintsController extends Controller
             // );
             // print_r($diff);die;
         }
+
         // save the sheet
         $current_stamp = time();
         $fp = fopen('./archive/'.time().'.csv', 'w');
@@ -229,6 +267,85 @@ class PrintsController extends Controller
 
         $print_sheets[] = $matrix;
         return $print_sheets;
+    }
+
+    private function insertProduct(&$matrix, $product)
+    {
+        $original_matrix = new \ArrayObject($matrix);
+        $inserted = false;
+
+        for ($row = 0; $row < count($matrix); $row++)
+        {
+            for ($col = 0; $col < count($matrix[0]); $col++)
+            {
+                if ($matrix[$row][$col] === '0')
+                {
+                    // echo 'doing ' .$product->height . 'x' . $product->width . "\n";
+
+                    // check if submatrix in in matrix
+                    if (($row + $product->height <= count($matrix)) && ($col + $product->width <= count($matrix[0])))
+                    {
+                        // clone matrix
+                        $matrix_clone = new \ArrayObject($matrix);
+
+                        // get sub matrix
+                        $sub_matrix = new \ArrayObject();
+
+                        // echo 'row at ' . $row . ', col at ' . $col . "\n";
+                        for ($height = $row; $height < $row + $product->height; $height++)
+                        {
+                            $sub_matrix[] = array_splice($matrix_clone[$height], $col, $product->width);
+                        }
+
+                        // print_r($sub_matrix);
+
+                        // if rectangle can be injected
+                        if ($this->injectable($sub_matrix, '0'))
+                        {
+                            // gather inserted item data at initial
+                            $inserted_product = new \stdClass;
+                            $inserted_product->x_pos = $col;
+                            $inserted_product->y_pos = $row;
+                            $inserted_product->width = $product->width;
+                            $inserted_product->height = $product->height;
+                            $inserted_product->order_item_id = $product->order_item_id;
+
+                            // insert rectangle
+                            for ($i = $row; $i < $row + $product->height; $i++)
+                            {
+                                for ($j = $col; $j < $col + $product->width; $j++)
+                                {
+                                    // print_r($inserted_product->order_item_id . ' INSERTED AS '.$product->name.', AT ' .$i.'x'.$j. "\n");
+                                    $matrix[$i][$j] = $product->name;
+                                    $inserted = true;
+                                }
+                            }
+
+                            $inserted_products[] = $inserted_product;
+
+                            $products_clone[] = $inserted_product;
+
+                            // if inserted, stop the iteration for current product
+                            if ($inserted)
+                            {
+                                break 2;
+                            }
+
+                        }
+                    }
+                    // $this->dfs($row, $col, $matrix, $seen);
+
+                    
+                }
+            }
+        }
+
+        // product cannot be inserted, return the original matrix
+        if (!$inserted)
+        {
+            return array('success'=>false, 'matrix'=>$original_matrix);
+        }
+        return array('success'=>true, 'matrix'=>$matrix);
     }
 
     /*
