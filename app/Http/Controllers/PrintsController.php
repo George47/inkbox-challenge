@@ -138,50 +138,63 @@ class PrintsController extends Controller
 
     private function processOrders($orders)
     {
-        $order_ids = array();
-
         $print_sheets = array();
 
         $matrix = $this->initiatePrint($this->row_len, $this->col_len, '0');    
-
         
         $index = 0;
-        print_r($orders);die;
-        // while(!empty($orders))
-        // {
-        //     // $orders[$index]
 
-        //     // if inserted, set index to 0 again
-        // }
-        // \unset($orders[0]->products[1]);
-        foreach ($orders as $order_details)
+        while(count($orders) > 0)
         {
-
-            $process_order = $order_details->order_id;
-            $process_products = new \ArrayObject($order_details->products);
+            $process_order = $orders[$index]->order_id;
+            $process_products = new \ArrayObject($orders[$index]->products);
 
             $insert_result = $this->insertProducts($matrix, $process_products);
+
+            // print_r($insert_result);
 
             if ($insert_result['success'])
             {
                 //record saved matrix
                 $matrix = $insert_result['matrix'];
-
-                // remove order from order list
-                unset($orders[$index]);
                 
+                // issue here
+                if ($index === (count($orders) - 1))
+                {
+                    unset($orders[$index]);
+                    $orders = array_values($orders);
+                    $index = 0;
+                    continue;
+                }
+
+                unset($orders[$index]);
+                $orders = array_values($orders);
                 continue;
+
             } else {
-                // print_r($process_order . 'failed');die;
                 //@TODO:
+                if ($index === (count($orders) - 1))
+                {
+                    $print_sheets[] = $matrix;
+                    
+                    $matrix = $this->initiatePrint($this->row_len, $this->col_len, '0');    
+                    $index = 0;
+                    continue;
+
+                } else {
+                    $index++;
+                }
                 //  keep order, next order
                 //      if index at end of order list
                 //          make new matrix 
                 //          reset index
             }
+
+
+
         }
 
-        //@TODO: save all matrix
+        // save last used matrix
         $print_sheets[] = $matrix;
         return $print_sheets;
     }
@@ -239,18 +252,8 @@ class PrintsController extends Controller
 
             foreach($product_list->products as $product)
             {
-
-                // START INSERT
                 $matrix = $this->insertProduct($matrix, $product)['matrix'];
-                // END INSERT
-            }
-            
-            // $product_list->products[] = $product_list->products[1];
-            // $diff = array_diff(
-            //     $product_list->products,
-            //     $products_clone
-            // );
-            // print_r($diff);die;
+            }            
         }
 
         // save the sheet
