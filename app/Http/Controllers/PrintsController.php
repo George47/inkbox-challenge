@@ -18,6 +18,7 @@ class PrintsController extends Controller
     {
         $this->row_len = 10;
         $this->col_len = 15;
+        $this->shuffle_count = 50;
         // should cover size overflow issue
 
         $this->matrix = $this->initiatePrint($this->row_len, $this->col_len, '0');    
@@ -71,7 +72,8 @@ class PrintsController extends Controller
         $products_full[] = $this->gatherProducts($orders, 'sortByWidth');
         $products_full[] = $this->gatherProducts($orders, 'sortByHeight');
 
-        for ($shuffle=0; $shuffle < 2000; $shuffle++)
+
+        for ($shuffle=0; $shuffle < $this->shuffle_count; $shuffle++)
         {
             $products_full[] = $this->gatherProducts($orders, 'shuffle');
         }
@@ -87,14 +89,14 @@ class PrintsController extends Controller
         }
 
         usort($sheets_full, array($this, 'sortByUnused'));
-
+// print_r($sheets_full);die;
         $response_sheets = $sheets_full[0];
 
         for ($i = 0; $i < count($response_sheets['print']); $i++)
         {
             // save sheets
             $current_stamp = time();
-            $fp = fopen('./archive/'.time().$i.'.csv', 'w');
+            $fp = fopen('./archive/'.time().'-'.(string)$i.'.csv', 'w');
 
             foreach ($response_sheets['print'][$i] as $fields) {
                 fputcsv($fp, $fields);
