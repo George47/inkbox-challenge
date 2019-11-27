@@ -69,7 +69,13 @@ class PrintsController extends Controller
         $products_full[] = $this->gatherProducts($orders);
         $products_full[] = $this->gatherProducts($orders, 'sortByWidth');
         $products_full[] = $this->gatherProducts($orders, 'sortByHeight');
-        $products_full[] = $this->gatherProducts($orders, 'shuffle');
+
+        for ($shuffle=0; $shuffle < 2000; $shuffle++)
+        {
+            $products_full[] = $this->gatherProducts($orders, 'shuffle');
+        }
+
+        // @TODO: alternative, find all possible combinations of order placement and products in order
 
         $sheets_full = array();
         // create matrix
@@ -78,7 +84,6 @@ class PrintsController extends Controller
             $sheets_full[] = $this->processOrders($products);
         }
 
-        // print_r(json_encode($sheets_full));die;
         usort($sheets_full, array($this, 'sortByUnused'));
 
         $response_sheets = $sheets_full[0];

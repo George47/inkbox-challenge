@@ -9,6 +9,8 @@ $(document).ready(function(){
 
     console.log(window.location.href);
     $('#generatePrint').click(() =>{
+        $('.loader').show();
+        
         console.log('generating ... ');
 
         $.get('./prints/generate', function(data) {
@@ -44,6 +46,8 @@ $(document).ready(function(){
             }
             // $('.print-report').append('<p>' + matrix + '</p>');
             $('#generatePrint').replaceWith('<button id="newPrint" class="btn btn-outline-secondary directory-buttons">New Print</button>');
+
+            $('.loader').hide();
         })
     });
 

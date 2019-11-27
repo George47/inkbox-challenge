@@ -8,6 +8,9 @@
         @endforeach
     @endif
     <button id="generatePrint" class="btn btn-outline-secondary directory-buttons">Generate Print</button>
+    
+    <div class="loader" style="display: none;"></div>
+
     {{-- <div class="print-report"></div> --}}
     <div class="container">
         <div class="row print-report">
