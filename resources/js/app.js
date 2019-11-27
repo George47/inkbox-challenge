@@ -12,10 +12,12 @@ $(document).ready(function(){
         console.log('generating ... ');
 
         $.get('./prints/generate', function(data) {
-            let matrix = '';
+            $('.print-report').empty();        
+
 
             for (let print = 0; print < data.length; print++)
             {
+                let matrix = '';
                 matrix += '<strong> Sheet ' + (print + 1) + '</strong><br><br>';
                 let print_details = data[print];
                 for (let i = 0; i < print_details.length; i++)
@@ -31,8 +33,16 @@ $(document).ready(function(){
                     }
                 }
                 matrix += '<br><br>';
-            }        
-            $('.print-report').replaceWith('<p>' + matrix + '</p>');
+
+                $('.print-report').append(
+                    '   <div class="col-sm">\
+                            ' + matrix + '\
+                        </div>\
+                    '
+                );
+    
+            }
+            // $('.print-report').append('<p>' + matrix + '</p>');
             $('#generatePrint').replaceWith('<button id="newPrint" class="btn btn-outline-secondary directory-buttons">New Print</button>');
         })
     });
