@@ -63,21 +63,32 @@ class PrintsController extends Controller
 
         $orders = $this->orders;
 
+        $products_full = array();
+
         // gather products
-        $products = $this->gatherProducts($orders);
+        $products_full[] = $this->gatherProducts($orders);
+        $products_full[] = $this->gatherProducts($orders, 'sortByWidth');
+        $products_full[] = $this->gatherProducts($orders, 'sortByHeight');
+        $products_full[] = $this->gatherProducts($orders, 'shuffle');
 
-        // change sorting of products to here,
-        // create two possible algorithms, one sorted and one randomly generates all possible combinations
-
-        
+        $sheets_full = array();
         // create matrix
-        $matrix = $this->processOrders($products);
+        foreach ($products_full as $products)
+        {
+            $sheets_full[] = $this->processOrders($products);
+        }
 
-        // get all possible combinations and find minimum
+        // print_r(json_encode($sheets_full));die;
+        usort($sheets_full, array($this, 'sortByUnused'));
 
         // $matrix = $this->insertGrid($products);
 
-        return $matrix;
+        return $sheets_full[0]['print'];
+    }
+
+    private function sortByUnused($a, $b)
+    {
+        return $a['unused'] - $b['unused'];
     }
 
     private function sortByHeight($a, $b)
@@ -85,7 +96,12 @@ class PrintsController extends Controller
         return $b->height - $a->height;
     }
 
-    private function gatherProducts($orders)
+    private function sortByWidth($a, $b)
+    {
+        return $b->width - $a->width;
+    }
+
+    private function gatherProducts($orders, $sortBy=false)
     {
         $products = array();
 
@@ -120,7 +136,16 @@ class PrintsController extends Controller
                 }
             }
 
-            usort($order_details->products, array($this, "sortByHeight")); 
+            
+            if ($sortBy)
+            {
+                if ($sortBy === 'shuffle')
+                {
+                    shuffle($order_details->products);
+                } else {
+                    usort($order_details->products, array($this, $sortBy)); 
+                }
+            }
 
             for ($j = 0; $j < count($order_details->products); $j++)
             {
@@ -197,8 +222,21 @@ class PrintsController extends Controller
         }
 
         // save last used matrix
+        // $print_sheets[] = $this->getUnusedArea($matrix);
         $print_sheets[] = $matrix;
-        return $print_sheets;
+        
+        $unused = 0;
+        foreach ($print_sheets as $print_sheet)
+        {
+            $unused += $this->getUnusedArea($print_sheet);
+        }
+
+        $result = array(
+            'unused' => $unused,
+            'print' => $print_sheets
+        );
+
+        return $result;
     }
 
     // insert each product to matrix, and unset product
@@ -499,14 +537,14 @@ class PrintsController extends Controller
         return true;
     }
 
-    private function getUnusedArea(&$matrix)
+    private function getUnusedArea($matrix)
     {
         $area = 0;
         $identifier = '0';
         
-        for ($row = 0; $row < sizeof($matrix); $row++)
+        for ($row = 0; $row < count($matrix); $row++)
         {
-            for ($col = 0; $col < sizeof($matrix[0]); $col++)
+            for ($col = 0; $col < count($matrix[0]); $col++)
             {
                 if ($matrix[$row][$col] === $identifier)
                 {
