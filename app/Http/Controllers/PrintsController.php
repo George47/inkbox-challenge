@@ -81,7 +81,32 @@ class PrintsController extends Controller
         // print_r(json_encode($sheets_full));die;
         usort($sheets_full, array($this, 'sortByUnused'));
 
-        // $matrix = $this->insertGrid($products);
+        $response_sheets = $sheets_full[0];
+
+        for ($i = 0; $i < count($response_sheets['print']); $i++)
+        {
+            // save sheets
+            $current_stamp = time();
+            $fp = fopen('./archive/'.time().$i.'.csv', 'w');
+
+            foreach ($response_sheets['print'][$i] as $fields) {
+                fputcsv($fp, $fields);
+            }
+
+            $in_sheet_products = array();
+
+            foreach ($response_sheets['products'] as $in_sheet_product)
+            {
+                if ($in_sheet_product->sheet_num === $i)
+                {
+                    $in_sheet_products[] = $in_sheet_product;
+                }
+            }
+
+            $this->savePrint($current_stamp, $in_sheet_products);
+    
+            fclose($fp);
+        }
 
         return $sheets_full[0]['print'];
     }
@@ -168,8 +193,11 @@ class PrintsController extends Controller
         $print_sheets = array();
 
         $matrix = $this->initiatePrint($this->row_len, $this->col_len, '0');    
-        
+        $sheet_num = 0;
+
         $index = 0;
+
+        $inserted_products = array();
 
         while(count($orders) > 0)
         {
@@ -178,12 +206,18 @@ class PrintsController extends Controller
 
             $insert_result = $this->insertProducts($matrix, $process_products);
 
-            // print_r($insert_result);
-
             if ($insert_result['success'])
             {
                 //record saved matrix
                 $matrix = $insert_result['matrix'];
+                
+                // $insert_result['product']->sheet_num = $sheet_num;
+                foreach ($insert_result['product'] as $sheet_product)
+                {
+                    $sheet_product->sheet_num = $sheet_num;
+                }
+
+                $inserted_products[] = $insert_result['product'];
                 
                 // issue here
                 if ($index === (count($orders) - 1))
@@ -204,7 +238,9 @@ class PrintsController extends Controller
                 {
                     $print_sheets[] = $matrix;
                     
-                    $matrix = $this->initiatePrint($this->row_len, $this->col_len, '0');    
+                    $matrix = $this->initiatePrint($this->row_len, $this->col_len, '0');
+                    $sheet_num += 1;
+
                     $index = 0;
                     continue;
 
@@ -233,7 +269,9 @@ class PrintsController extends Controller
 
         $result = array(
             'unused' => $unused,
-            'print' => $print_sheets
+            'print' => $print_sheets,
+            // 'products' => $inserted_products
+            'products' => call_user_func_array('array_merge', $inserted_products)
         );
 
         return $result;
@@ -249,6 +287,7 @@ class PrintsController extends Controller
         //original matrix
         $matrix_clone = new \ArrayObject($matrix);
 
+        $inserted_products = array();
         foreach($products as $product)
         {
             $result = $this->insertProduct($matrix, $product);
@@ -257,13 +296,14 @@ class PrintsController extends Controller
             if ($result['success'])
             {
                 $matrix = $result['matrix'];
+                $inserted_products[] = $result['product'];
             } else {
                 // one of the products failed to insert, report failure
                 return array('success'=>false, 'matrix'=>$matrix_clone);
             }
         }
 
-        return array('success'=>true, 'matrix'=>$matrix);
+        return array('success'=>true, 'matrix'=>$matrix, 'product'=>$inserted_products);
     }
 
     // while loop to inject items for order,
@@ -359,7 +399,7 @@ class PrintsController extends Controller
                                 }
                             }
 
-                            $inserted_products[] = $inserted_product;
+                            $inserted_products = $inserted_product;
 
                             $products_clone[] = $inserted_product;
 
@@ -383,7 +423,8 @@ class PrintsController extends Controller
         {
             return array('success'=>false, 'matrix'=>$original_matrix);
         }
-        return array('success'=>true, 'matrix'=>$matrix);
+
+        return array('success'=>true, 'matrix'=>$matrix, 'product'=>$inserted_products);
     }
 
     /*
