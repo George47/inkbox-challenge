@@ -291,7 +291,7 @@ class PrintsController extends Controller
         foreach($products as $product)
         {
             $result = $this->insertProduct($matrix, $product);
-            // print_r($result);
+
             // success insertion, continue to next product
             if ($result['success'])
             {
@@ -311,47 +311,6 @@ class PrintsController extends Controller
     // if all inserted, return new matrix and mark order processed
     // if cannot all be inserted, return old matrix and leave order to be process for next 
 
-    // dynamic programming could be implemented as well as an improvement
-    private function insertGrid($products)
-    {
-        $print_sheets = array();
-
-        // print_r(json_encode($products));die;
-        // initiate empty matrix
-        $matrix = $this->initiatePrint($this->row_len, $this->col_len, '0');
-
-        // record inserted products
-        $inserted_products = new \ArrayObject(); 
-
-        // run algorithm
-        foreach ($products as $product_list)
-        {
-            // record products, can just record order details product id
-            $products_clone = array();
-            // $products_clone = new \ArrayObject($product_list->products);
-
-            foreach($product_list->products as $product)
-            {
-                $matrix = $this->insertProduct($matrix, $product)['matrix'];
-            }            
-        }
-
-        // save the sheet
-        $current_stamp = time();
-        $fp = fopen('./archive/'.time().'.csv', 'w');
-
-        foreach ($matrix as $fields) {
-            fputcsv($fp, $fields);
-        }
-        
-        fclose($fp);
-        // print_r($matrix);die;
-        $this->savePrint($current_stamp, $inserted_products);
-
-        $print_sheets[] = $matrix;
-        return $print_sheets;
-    }
-
     private function insertProduct(&$matrix, $product)
     {
         $original_matrix = new \ArrayObject($matrix);
@@ -363,6 +322,7 @@ class PrintsController extends Controller
             {
                 if ($matrix[$row][$col] === '0')
                 {
+                    //@TODO: consider case of 2x5 and 5x2 fit swap
 
                     // check if submatrix in in matrix
                     if (($row + $product->height <= count($matrix)) && ($col + $product->width <= count($matrix[0])))
@@ -413,7 +373,6 @@ class PrintsController extends Controller
                     }
                     // $this->dfs($row, $col, $matrix, $seen);
 
-                    
                 }
             }
         }
@@ -425,138 +384,6 @@ class PrintsController extends Controller
         }
 
         return array('success'=>true, 'matrix'=>$matrix, 'product'=>$inserted_products);
-    }
-
-    /*
-    *   Backup function to be developed for mixed orders
-    *   @TODO: change for mixed orders
-    */
-    private function gatherProductsMixed($orders)
-    {
-        $products = array();
-
-        // change the way to gather products
-        foreach ($orders as $order)
-        {
-            foreach($order->products as $order_product)
-            {
-                $productSizeRaw = $order_product->size;
-                $productSize = explode('x', $productSizeRaw);
-
-                for ($i = 0; $i < $order_product->quantity; $i++)
-                {
-                    $product = new \stdClass;
-                    $product->name = $order_product->title[0];
-                    $product->width = $productSize[0];
-                    $product->height = $productSize[1];
-                    $product->order_item_id = $order_product->order_item_id;
-                    $products[] = $product;    
-                }
-            }
-        }
-
-        usort($products, array($this, "sortByHeight")); 
-
-        return $products;
-    }
-
-    /*
-    *   Backup function to be developed for mixed orders
-    *   @TODO: change for mixed orders
-    */
-    private function insertGridMixed($products)
-    {
-        // initiate empty matrix
-        $matrix = $this->initiatePrint($this->row_len, $this->col_len, '0');
-
-        // record inserted products
-        $inserted_products = new \ArrayObject(); 
-
-        // run algorithm
-        foreach ($products as $product)
-        {
-            for ($row = 0; $row < count($matrix); $row++)
-            {
-                for ($col = 0; $col < count($matrix[0]); $col++)
-                {
-                    if ($matrix[$row][$col] === '0')
-                    {
-                        $inserted = false;
-
-                        // echo 'doing ' .$product->height . 'x' . $product->width . "\n";
-
-                        // check if submatrix in in matrix
-                        if (($row + $product->height <= count($matrix)) && ($col + $product->width <= count($matrix[0])))
-                        {
-                            // clone matrix
-                            $matrix_clone = new \ArrayObject($matrix);
-
-                            // get sub matrix
-                            $sub_matrix = new \ArrayObject();
-
-                            // echo 'row at ' . $row . ', col at ' . $col . "\n";
-                            for ($height = $row; $height < $row + $product->height; $height++)
-                            {
-                                $sub_matrix[] = array_splice($matrix_clone[$height], $col, $product->width);
-                            }
-
-                            // print_r($sub_matrix);
-
-                            // if rectangle can be injected
-                            if ($this->injectable($sub_matrix, '0'))
-                            {
-                                // gather inserted item data at initial
-                                $inserted_product = new \stdClass;
-                                $inserted_product->x_pos = $col;
-                                $inserted_product->y_pos = $row;
-                                $inserted_product->width = $product->width;
-                                $inserted_product->height = $product->height;
-                                $inserted_product->order_item_id = $product->order_item_id;
-
-                                // insert rectangle
-                                for ($i = $row; $i < $row + $product->height; $i++)
-                                {
-                                    for ($j = $col; $j < $col + $product->width; $j++)
-                                    {
-                                        $matrix[$i][$j] = $product->name;
-                                        $inserted = true;
-
-                                        // 
-
-                                        // Warning: #1366 Incorrect integer value: '' for column 'ps_id' at row 1
-
-                                    }
-                                }
-
-                                $inserted_products[] = $inserted_product;
-
-                                // if inserted, stop the iteration for current product
-                                if ($inserted)
-                                {
-                                    break 2;
-                                }
-
-                            }
-                        }
-                        // $this->dfs($row, $col, $matrix, $seen);
-                    }
-                }
-            }
-        }
-
-        // save the sheet
-        $current_stamp = time();
-        $fp = fopen('./archive/'.time().'.csv', 'w');
-
-        foreach ($matrix as $fields) {
-            fputcsv($fp, $fields);
-        }
-        
-        fclose($fp);
-        // print_r($matrix);die;
-        $this->savePrint($current_stamp, $inserted_products);
-
-        return $matrix;
     }
 
     /*
