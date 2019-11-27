@@ -73,6 +73,8 @@ class PrintsController extends Controller
         // create matrix
         $matrix = $this->processOrders($products);
 
+        // get all possible combinations and find minimum
+
         // $matrix = $this->insertGrid($products);
 
         return $matrix;
@@ -283,7 +285,6 @@ class PrintsController extends Controller
             {
                 if ($matrix[$row][$col] === '0')
                 {
-                    // echo 'doing ' .$product->height . 'x' . $product->width . "\n";
 
                     // check if submatrix in in matrix
                     if (($row + $product->height <= count($matrix)) && ($col + $product->width <= count($matrix[0])))
@@ -294,13 +295,10 @@ class PrintsController extends Controller
                         // get sub matrix
                         $sub_matrix = new \ArrayObject();
 
-                        // echo 'row at ' . $row . ', col at ' . $col . "\n";
                         for ($height = $row; $height < $row + $product->height; $height++)
                         {
                             $sub_matrix[] = array_splice($matrix_clone[$height], $col, $product->width);
                         }
-
-                        // print_r($sub_matrix);
 
                         // if rectangle can be injected
                         if ($this->injectable($sub_matrix, '0'))
@@ -318,7 +316,6 @@ class PrintsController extends Controller
                             {
                                 for ($j = $col; $j < $col + $product->width; $j++)
                                 {
-                                    // print_r($inserted_product->order_item_id . ' INSERTED AS '.$product->name.', AT ' .$i.'x'.$j. "\n");
                                     $matrix[$i][$j] = $product->name;
                                     $inserted = true;
                                 }
