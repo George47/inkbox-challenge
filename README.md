@@ -31,3 +31,8 @@ e.g. row and count(matrix) === 2, then insert 2x5 first, same idea for column
 - Instead of binding products to orders, products can be stored together and have an order_id attribute.
 
 - Overflow causes 500 server reponse, create handler for it and resend request with fewer shuffle counts
+
+### Better Approaches
+- Search for fillable products by col size and row size, and fill accordingly
+
+- Dynamic programming, store the combinations that fills x rows perfectly and use that order of iterating products
