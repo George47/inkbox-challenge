@@ -5,7 +5,7 @@ This application is built as the technical challenge for InkBox. Goal is to gene
 
 This application is built under Laravel framework. Serve the application locally and the app can be accessed under `/public` folder
 
-###Approach
+### Approach
 1. Bound products for same order together
 
 2. Shuffle the products under orders to get more combinations of insertion
@@ -16,7 +16,7 @@ This application is built under Laravel framework. Serve the application locally
 
 4. Store print sheets and sheet products accordingly, and record the x y positions. 
 
-####Sheet Improvements
+#### Sheet Improvements
 - 2x5 and 5x2 are essentially the same, can be flipped according to remaining space
 e.g. row and count(matrix) === 2, then insert 2x5 first, same idea for column
 
