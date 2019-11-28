@@ -18,7 +18,6 @@ class PrintsController extends Controller
     {
         $this->row_len = 10;
         $this->col_len = 15;
-        $this->shuffle_count = 50;
         // should cover size overflow issue
 
         $this->matrix = $this->initiatePrint($this->row_len, $this->col_len, '0');    
@@ -72,8 +71,10 @@ class PrintsController extends Controller
         $products_full[] = $this->gatherProducts($orders, 'sortByWidth');
         $products_full[] = $this->gatherProducts($orders, 'sortByHeight');
 
+        $shuffle_count = 50;
+        // change shuffle count depending on count($orders)
 
-        for ($shuffle=0; $shuffle < $this->shuffle_count; $shuffle++)
+        for ($shuffle=0; $shuffle < $shuffle_count; $shuffle++)
         {
             $products_full[] = $this->gatherProducts($orders, 'shuffle');
         }
@@ -92,11 +93,11 @@ class PrintsController extends Controller
 // print_r($sheets_full);die;
         $response_sheets = $sheets_full[0];
 
+        $current_stamp = time();
         for ($i = 0; $i < count($response_sheets['print']); $i++)
         {
             // save sheets
-            $current_stamp = time();
-            $fp = fopen('./archive/'.time().'-'.(string)$i.'.csv', 'w');
+            $fp = fopen('./archive/'.$current_stamp.'-'.(string)$i.'.csv', 'w');
 
             foreach ($response_sheets['print'][$i] as $fields) {
                 fputcsv($fp, $fields);
@@ -112,7 +113,7 @@ class PrintsController extends Controller
                 }
             }
 
-            $this->savePrint($current_stamp, $in_sheet_products);
+            $this->savePrint(($current_stamp.'-'.(string)$i), $in_sheet_products);
     
             fclose($fp);
         }
