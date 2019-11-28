@@ -3,7 +3,11 @@ This application is built as the technical challenge for InkBox. Goal is to gene
 
 ### Usage
 
-This application is built under Laravel framework. Serve the application locally and the app can be accessed under `/public` folder
+This application is built under Laravel framework. Serve the application locally and the app can be accessed under `/public` folder.
+
+Database configuration can be modified under `/.env`, I have it set to `127.0.0.1` under `inkbox` table.
+
+Sample dump data sql can be found at `/db/inkbox.sql`.
 
 ### Approach
 1. Bound products for same order together
