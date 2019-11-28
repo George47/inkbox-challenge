@@ -14,6 +14,12 @@ $(document).ready(function(){
         
         console.log('generating ... ');
 
+        // handle 500 server error, and reduce the shuffle count
+        // data = {};
+        // $.ajax({
+
+        // })
+
         $.get('./prints/generate', function(data) {
             $('.print-report-sheets').empty();        
 
