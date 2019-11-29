@@ -32,7 +32,7 @@ $(document).ready(function(){
                   shuffles = 200
                   break;
                 case order_count <= 200 :
-                  shuffles = 100
+                  shuffles = 80
                   break;
                 case order_count <= 250 :
                   shuffles = 50
