@@ -36,3 +36,7 @@ e.g. row and count(matrix) === 2, then insert 2x5 first, same idea for column
 - Search for fillable products by col size and row size, and fill accordingly
 
 - Dynamic programming, store the combinations that fills x rows perfectly and use that order of iterating products
+
+### Notes
+
+Not sure on memory allocation, improved the shuffle count logic. (if failed, reduce shuffle count by 30%)
