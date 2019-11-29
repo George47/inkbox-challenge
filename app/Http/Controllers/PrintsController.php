@@ -72,32 +72,14 @@ class PrintsController extends Controller
         $products_full[] = $this->gatherProducts($orders, 'sortByWidth');
         $products_full[] = $this->gatherProducts($orders, 'sortByHeight');
 
-        // change shuffle count depending on count($orders)
+
         $shuffle_count = 50;
-        switch (true)
+        if (isset($_GET['shuffle']))
         {
-            case (count($orders) <= 50):
-                $shuffle_count = 1000;
-                break;    
-            case (count($orders) <= 100):
-                $shuffle_count = 500;
-                break;    
-            case (count($orders) <= 150):
-                $shuffle_count = 200;
-                break;    
-            case (count($orders) <= 200):
-                $shuffle_count = 80;
-                break;    
-            case (count($orders) <= 250):
-                $shuffle_count = 50;
-                break;    
-            case (count($orders) <= 200):
-                $shuffle_count = 30;
-                break;    
-            default:
-                $shuffle_count = 20;
-                break;    
+            $shuffle_count = $_GET['shuffle'];
         }
+
+        // change shuffle count depending on count($orders)
 
         for ($shuffle=0; $shuffle < $shuffle_count; $shuffle++)
         {
