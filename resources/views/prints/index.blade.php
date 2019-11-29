@@ -1,12 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
-    @if(count($orders) > 0)
-        <p>Orders to process:</p>
-        @foreach($orders as $order)
-            <a href="orders/{{$order->order_number}}">{{$order->order_number}}</a>
-        @endforeach
-    @endif
+    <div id="orders">
+        @if(count($orders) > 0)
+            <p>Orders to process:</p>
+            @foreach($orders as $order)
+                <a href="orders/{{$order->order_number}}">{{$order->order_number}}</a>
+            @endforeach
+        @endif
+    </div>
     <br>
     <button id="generatePrint" class="btn btn-outline-secondary directory-buttons">Generate Print</button>
     

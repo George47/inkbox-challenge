@@ -14,7 +14,8 @@ $(document).ready(function(){
         
         console.log('generating ... ');
         
-        const order_count = $(".content a").length;
+        const order_count = $("#orders a").length;
+        
         let shuffles = 0;
         if (!order_count || order_count < 20)
         {
